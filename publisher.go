@@ -27,6 +27,7 @@ func(c Client) Publish(message Message) error {
 
 	defer func(confirms <-chan amqp.Confirmation) error {
 		if confirmed := <-confirms; confirmed.Ack {
+			fmt.Printf("confirmed delivery of delivery tag: %d", confirmed.DeliveryTag)
 			return nil
 		} else {
 			return fmt.Errorf("failed delivery of delivery tag: %d", confirmed.DeliveryTag)
