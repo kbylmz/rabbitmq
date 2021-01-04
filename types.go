@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"encoding/json"
 	"github.com/streadway/amqp"
 )
 
@@ -8,7 +9,7 @@ const (
 	ErrorQueueSuffix = "_ERROR"
 	RetryQueueSuffix = "_RETRY"
 	RetryDestinationSuffix = "_TryAgain"
-	RetryTimeoutInMilliseconds = 2500
+	RetryTimeoutInMilliseconds = 25000
 	PrefetchSize = 0
 	PrefetchCount = 50
 	Global = false
@@ -30,5 +31,15 @@ type Client struct {
 }
 
 type Message struct {
+	RetryCount int
 	Payload   []byte
+}
+
+func MessageDeserialize(b []byte) (msg *Message, err error) {
+	err = json.Unmarshal(b, &msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return
 }

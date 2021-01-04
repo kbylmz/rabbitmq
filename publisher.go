@@ -1,13 +1,20 @@
 package rabbitmq
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/streadway/amqp"
 )
 
 func(c Client) Publish(message Message) error {
 
-	if err := c.ConnectionChannel.Confirm(false); err != nil {
+	event,err := json.Marshal(message)
+
+	if err != nil {
+		return fmt.Errorf("Event cannot be published: %s", err)
+	}
+
+	if err = c.ConnectionChannel.Confirm(false); err != nil {
 		return fmt.Errorf("Channel could not be put into confirm mode: %s", err)
 	}
 
@@ -20,7 +27,7 @@ func(c Client) Publish(message Message) error {
 		false,                              // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
-			Body:        message.Payload,
+			Body:        event,
 		}); err != nil {
 		return fmt.Errorf("Exchange Publish: %s", err)
 	}

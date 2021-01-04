@@ -22,6 +22,7 @@
     <list default="true" id="248ba409-be3d-4f50-8cdd-01dcd074671d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/publisher.go" beforeDir="false" afterPath="$PROJECT_DIR$/publisher.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/types.go" beforeDir="false" afterPath="$PROJECT_DIR$/types.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,38 +98,42 @@
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
     <state x="360" y="222" width="1071" height="725" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1609624558748" />
-    <state width="1750" height="392" key="GridCell.Tab.0.bottom" timestamp="1609624568449">
+    <state width="570" height="466" key="DebuggerActiveHint" timestamp="1609631498751">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state width="1750" height="392" key="GridCell.Tab.0.bottom/0.0.1792.1120@0.0.1792.1120" timestamp="1609624568449" />
-    <state width="1750" height="392" key="GridCell.Tab.0.center" timestamp="1609624568448">
+    <state width="570" height="466" key="DebuggerActiveHint/0.0.1792.1120@0.0.1792.1120" timestamp="1609631498751" />
+    <state width="1750" height="318" key="GridCell.Tab.0.bottom" timestamp="1609631995293">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state width="1750" height="392" key="GridCell.Tab.0.center/0.0.1792.1120@0.0.1792.1120" timestamp="1609624568448" />
-    <state width="1750" height="392" key="GridCell.Tab.0.left" timestamp="1609624568447">
+    <state width="1750" height="318" key="GridCell.Tab.0.bottom/0.0.1792.1120@0.0.1792.1120" timestamp="1609631995293" />
+    <state width="1750" height="318" key="GridCell.Tab.0.center" timestamp="1609631995291">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state width="1750" height="392" key="GridCell.Tab.0.left/0.0.1792.1120@0.0.1792.1120" timestamp="1609624568447" />
-    <state width="1750" height="392" key="GridCell.Tab.0.right" timestamp="1609624568448">
+    <state width="1750" height="318" key="GridCell.Tab.0.center/0.0.1792.1120@0.0.1792.1120" timestamp="1609631995291" />
+    <state width="1750" height="318" key="GridCell.Tab.0.left" timestamp="1609631995289">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state width="1750" height="392" key="GridCell.Tab.0.right/0.0.1792.1120@0.0.1792.1120" timestamp="1609624568448" />
-    <state width="1750" height="392" key="GridCell.Tab.1.bottom" timestamp="1609624568455">
+    <state width="1750" height="318" key="GridCell.Tab.0.left/0.0.1792.1120@0.0.1792.1120" timestamp="1609631995289" />
+    <state width="1750" height="318" key="GridCell.Tab.0.right" timestamp="1609631995292">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state width="1750" height="392" key="GridCell.Tab.1.bottom/0.0.1792.1120@0.0.1792.1120" timestamp="1609624568455" />
-    <state width="1750" height="392" key="GridCell.Tab.1.center" timestamp="1609624568450">
+    <state width="1750" height="318" key="GridCell.Tab.0.right/0.0.1792.1120@0.0.1792.1120" timestamp="1609631995292" />
+    <state width="1750" height="392" key="GridCell.Tab.1.bottom" timestamp="1609631629915">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state width="1750" height="392" key="GridCell.Tab.1.center/0.0.1792.1120@0.0.1792.1120" timestamp="1609624568450" />
-    <state width="1750" height="392" key="GridCell.Tab.1.left" timestamp="1609624568449">
+    <state width="1750" height="392" key="GridCell.Tab.1.bottom/0.0.1792.1120@0.0.1792.1120" timestamp="1609631629915" />
+    <state width="1750" height="392" key="GridCell.Tab.1.center" timestamp="1609631629913">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state width="1750" height="392" key="GridCell.Tab.1.left/0.0.1792.1120@0.0.1792.1120" timestamp="1609624568449" />
-    <state width="1750" height="392" key="GridCell.Tab.1.right" timestamp="1609624568454">
+    <state width="1750" height="392" key="GridCell.Tab.1.center/0.0.1792.1120@0.0.1792.1120" timestamp="1609631629913" />
+    <state width="1750" height="392" key="GridCell.Tab.1.left" timestamp="1609631629888">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state width="1750" height="392" key="GridCell.Tab.1.right/0.0.1792.1120@0.0.1792.1120" timestamp="1609624568454" />
+    <state width="1750" height="392" key="GridCell.Tab.1.left/0.0.1792.1120@0.0.1792.1120" timestamp="1609631629888" />
+    <state width="1750" height="392" key="GridCell.Tab.1.right" timestamp="1609631629914">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1750" height="392" key="GridCell.Tab.1.right/0.0.1792.1120@0.0.1792.1120" timestamp="1609631629914" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -137,6 +142,26 @@
           <url>file://$PROJECT_DIR$/test/main.go</url>
           <line>44</line>
           <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/test/main.go</url>
+          <line>22</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/publisher.go</url>
+          <line>35</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/consumer.go</url>
+          <line>10</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/consumer.go</url>
+          <line>46</line>
+          <option name="timeStamp" value="12" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
