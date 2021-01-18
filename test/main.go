@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"rabbitmq"
+	"time"
 )
 
 type Test struct {
@@ -26,24 +28,32 @@ func main()  {
 		fmt.Print(err)
 	}
 
-	err = rc.InitializeQueues()
+	//err = rc.InitializeQueues()
+	//
+	//if err != nil {
+	//	fmt.Print(err)
+	//}
 
-	if err != nil {
-		fmt.Print(err)
+	t := Test{Name: "Burak", LastName: "Yilmaz"}
+	newFsConfigBytes, _ := json.Marshal(t)
+	m := rabbitmq.Message{
+		Payload: newFsConfigBytes,
 	}
 
-	//t := Test{Name: "Burak", LastName: "Yilmaz"}
-	//newFsConfigBytes, _ := json.Marshal(t)
-	//m := rabbitmq.Message{
-	//	Payload: nil,
-	//}
-	//
-	//if err = rc.Publish(m); err != nil {
-	//	fmt.Sprint(err)
-	//}
+	i := 0
+	for true {
+		fmt.Println(i)
+		if err = rc.Publish(m); err != nil {
+			fmt.Println(" error")
+			fmt.Println(err)
+		}
 
-	err = rc.Consume()
-	fmt.Print(err)
+		time.Sleep(1 * time.Second)
+		i++
+	}
+
+	//err = rc.Consume()
+	//fmt.Print(err)
 
 	fmt.Print("safa")
 }

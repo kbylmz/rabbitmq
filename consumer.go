@@ -8,8 +8,8 @@ import (
 
 func(c Client) Consume() error {
 
-	messages, err := c.ConnectionChannel.Consume(
-		c.Config.Prefix+"."+c.Config.RoutingKey, // name
+	messages, err := c.connectionChannel.Consume(
+		c.config.Prefix+"."+c.config.RoutingKey, // name
 		"",      // consumerTag,
 		false,      // noAck
 		false,      // exclusive
@@ -64,11 +64,11 @@ func publishRetryQueue(m *Message, c Client)  {
 
 	event,_ := json.Marshal(m)
 
-	queueName := c.Config.Prefix+"."+c.Config.RoutingKey
+	queueName := c.config.Prefix+"."+c.config.RoutingKey
 	retryQueueName := queueName + RetryQueueSuffix
 
-	c.ConnectionChannel.Publish(
-		c.Config.ExchangeName, // exchange
+	c.connectionChannel.Publish(
+		c.config.ExchangeName, // exchange
 		retryQueueName,  // routing key
 		false,                              // mandatory
 		false,                              // immediate
@@ -82,11 +82,11 @@ func publishRetryQueue(m *Message, c Client)  {
 func publishErrorQueue(m *Message, c Client)  {
 	event,_ := json.Marshal(m)
 
-	queueName := c.Config.Prefix+"."+c.Config.RoutingKey
+	queueName := c.config.Prefix+"."+c.config.RoutingKey
 	errorQueueName := queueName + ErrorQueueSuffix
 
-	c.ConnectionChannel.Publish(
-		c.Config.ExchangeName, // exchange
+	c.connectionChannel.Publish(
+		c.config.ExchangeName, // exchange
 		errorQueueName,  // routing key
 		false,                              // mandatory
 		false,                              // immediate

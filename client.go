@@ -1,38 +1,32 @@
 package rabbitmq
 
 import (
+	"fmt"
 	"github.com/streadway/amqp"
 	"log"
+	"time"
 )
 
 
 //NewRabbitMQClient ...
 func NewRabbitMQClient(config Config) (*Client, error) {
-	conn, err := amqp.Dial(config.ConnectionString)
 
-	if err != nil {
+	client := &Client{
+		config: config,
+		isConnected: false,
+	}
+
+	 if err := client.connect(); err != nil{
+		 return nil, err
+	 }
+
+
+	if err := declareExchange(config, client.connectionChannel); err != nil {
 		return nil, err
 	}
 
-	ch, err := conn.Channel()
 
-	if err != nil {
-		return nil, err
-	}
-
-	if err = ch.Qos(PrefetchCount, PrefetchSize, Global); err != nil {
-		return nil, err
-	}
-
-	if err = declareExchange(config, ch); err != nil {
-		return nil, err
-	}
-
-	return &Client{
-		Conn: conn,
-		ConnectionChannel: ch,
-		Config: config,
-	}, nil
+	return client, nil
 }
 
 
@@ -62,7 +56,7 @@ func(c Client) InitializeQueues() error {
 		}
 	}()
 
-	queueName := c.Config.Prefix+"."+c.Config.RoutingKey
+	queueName := c.config.Prefix+"."+c.config.RoutingKey
 	errorQueueName := queueName + ErrorQueueSuffix
 	retryQueueName := queueName + RetryQueueSuffix
 	retryDestinationRoutingKey := queueName + RetryDestinationSuffix
@@ -70,12 +64,12 @@ func(c Client) InitializeQueues() error {
 	c.queueDeclare(queueName, nil)
 	c.queueDeclare(retryQueueName, map[string]interface{} {
 		"x-message-ttl": RetryTimeoutInMilliseconds,
-		"x-dead-letter-exchange": c.Config.ExchangeName,
+		"x-dead-letter-exchange": c.config.ExchangeName,
 		"x-dead-letter-routing-key": retryDestinationRoutingKey,
 	})
 	c.queueDeclare(errorQueueName, nil)
 
-	c.queueBind(queueName, c.Config.RoutingKey)
+	c.queueBind(queueName, c.config.RoutingKey)
 	c.queueBind(queueName, retryDestinationRoutingKey)
 	c.queueBind(retryQueueName, retryQueueName)
 	c.queueBind(errorQueueName, errorQueueName)
@@ -84,7 +78,7 @@ func(c Client) InitializeQueues() error {
 }
 
 func(c Client) queueDeclare(r string, args map[string]interface{})  {
-	_, err := c.ConnectionChannel.QueueDeclare(
+	_, err := c.connectionChannel.QueueDeclare(
 		r, 			// name
 		true,              // durable, the queue will survive a broker restart
 		false,          // delete when used
@@ -100,10 +94,10 @@ func(c Client) queueDeclare(r string, args map[string]interface{})  {
 }
 
 func(c Client) queueBind(q, r string)  {
-	err := c.ConnectionChannel.QueueBind(
+	err := c.connectionChannel.QueueBind(
 		q,                           // queue name
 		r,                       // routing key
-		c.Config.ExchangeName, // exchange
+		c.config.ExchangeName, // exchange
 		false,
 		nil)
 
@@ -111,4 +105,48 @@ func(c Client) queueBind(q, r string)  {
 		log.Printf("Failed to bind queue %s to routing key %s with error %s", q, r, err)
 		panic(err)
 	}
+}
+
+func (c *Client) handleReconnect() {
+	for !c.isConnected {
+
+		errC := <-c.errorChannel
+
+		if !c.isConnected {
+			fmt.Println(errC)
+			err := c.connect()
+
+			if err != nil {
+				fmt.Println("RETRY CONNECT")
+				time.Sleep(10*time.Second)
+				continue
+			}
+		}
+
+	}
+	fmt.Println("Connected to rabbitMQ")
+}
+
+func (c *Client) connect() error{
+	conn, err := amqp.Dial(c.config.ConnectionString)
+
+	if err != nil {
+		return err
+	}
+
+	ch, err := conn.Channel()
+
+	if err != nil {
+		return err
+	}
+
+	c.isConnected = true
+	c.conn = conn
+	c.connectionChannel = ch
+	c.errorChannel = make(chan *amqp.Error)
+	c.notifyConfirm = make(chan amqp.Confirmation, 1)
+	c.connectionChannel.NotifyClose(c.errorChannel)
+	c.connectionChannel.NotifyPublish(c.notifyConfirm)
+
+	return nil
 }

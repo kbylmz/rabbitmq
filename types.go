@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"encoding/json"
 	"github.com/streadway/amqp"
+	"os"
 )
 
 const (
@@ -25,9 +26,13 @@ type Config struct {
 
 // RabbitMQClient ...
 type Client struct {
-	Conn              *amqp.Connection
-	ConnectionChannel *amqp.Channel
-	Config			  Config
+	conn              *amqp.Connection
+	connectionChannel *amqp.Channel
+	notifyConfirm chan amqp.Confirmation
+	errorChannel   chan *amqp.Error
+	done          chan os.Signal
+	config			  Config
+	isConnected		  bool
 }
 
 type Message struct {
