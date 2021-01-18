@@ -3,7 +3,7 @@ package rabbitmq
 import (
 	"encoding/json"
 	"github.com/streadway/amqp"
-	"os"
+	"time"
 )
 
 const (
@@ -22,17 +22,15 @@ type Config struct {
 	RoutingKey		   string
 	Prefix	   		   string
 	ExchangeType	   string
+	ChannelNotifyTimeout time.Duration
 }
 
 // RabbitMQClient ...
 type Client struct {
 	conn              *amqp.Connection
-	connectionChannel *amqp.Channel
-	notifyConfirm chan amqp.Confirmation
-	errorChannel   chan *amqp.Error
-	done          chan os.Signal
 	config			  Config
-	isConnected		  bool
+	connectionChannel *amqp.Channel
+	ChannelNotifyTimeout time.Duration
 }
 
 type Message struct {

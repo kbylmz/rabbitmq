@@ -1,13 +1,15 @@
 package rabbitmq
 
-import "C"
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/streadway/amqp"
+	"log"
+	"time"
 )
 
-func(c Client) Publish(message Message) error {
+func (c *Client) PublishWithNewChannel(message Message) error {
 
 	event,err := json.Marshal(message)
 
@@ -15,23 +17,17 @@ func(c Client) Publish(message Message) error {
 		return fmt.Errorf("Event cannot be published: %s", err)
 	}
 
-	//if c.conn.IsClosed() {
-	//	c.isConnected = false
-	//	c.handleReconnect()
-	//}
+	channel, err := c.Channel()
+	if err != nil {
+		return errors.New("failed to open channel")
+	}
+	defer channel.Close()
 
-	//theChannel, err := c.conn.Channel()
-	//if err != nil {
-	//	return err
-	//}
+	if err := channel.Confirm(false); err != nil {
+		return errors.New("failed to put channel in confirmation mode")
+	}
 
-	//if err = c.connectionChannel.Confirm(false); err != nil {
-	//	c.isConnected = false
-	//	c.handleReconnect()
-	//}
-
-
-	if err := c.connectionChannel.Publish(
+	if err := channel.Publish(
 		c.config.ExchangeName, // exchange
 		c.config.RoutingKey,  // routing key
 		false,                              // mandatory
@@ -43,43 +39,16 @@ func(c Client) Publish(message Message) error {
 		return fmt.Errorf("Exchange Publish: %s", err)
 	}
 
-	//if err := theChannel.Close(); err != nil {
-	//	return err
-	//}
+	select {
+		case ntf := <-channel.NotifyPublish(make(chan amqp.Confirmation, 1)):
+			if !ntf.Ack {
+				return errors.New("failed to deliver message to exchange/queue")
+			}
+		case <-channel.NotifyReturn(make(chan amqp.Return)):
+			return errors.New("failed to deliver message to exchange/queue")
+		case <-time.After(c.ChannelNotifyTimeout):
+			log.Println("message delivery confirmation to exchange/queue timed out")
+	}
 
 	return nil
-
-	//if err = c.connectionChannel.Confirm(false); err != nil {
-	//	c.isConnected = false
-	//	c.handleReconnect()
-	//}
-
-	//confirms := c.notifyConfirm
-	//defer confirmOne(confirms)
-
-
-
-	
-	//if confirmed := <-c.notifyConfirm; confirmed.Ack {
-	//	fmt.Printf("confirmed delivery of delivery tag: %d", confirmed.DeliveryTag)
-	//	return nil
-	//}else {
-	//	<-time.After(1000)
-	//}
-
-
-	return nil
-}
-
-// One would typically keep a channel of publishings, a sequence number, and a
-// set of unacknowledged sequence numbers and loop until the publishing channel
-// is closed.
-func confirmOne(confirms <-chan amqp.Confirmation) {
-	fmt.Println("waiting for confirmation of one publishing")
-
-	//if confirmed := <-confirms; confirmed.Ack {
-	//	fmt.Println("confirmed delivery with delivery tag: %d", confirmed.DeliveryTag)
-	//} else {
-	//	fmt.Println("failed delivery of delivery tag: %d", confirmed.DeliveryTag)
-	//}
 }

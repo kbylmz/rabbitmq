@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"rabbitmq"
 	"time"
 )
@@ -20,6 +21,7 @@ func main()  {
 		ExchangeName: "Merchant-Exchange",
 		ExchangeType: "topic",
 		RoutingKey: "Deneme.CreatedEvent",
+		ChannelNotifyTimeout: 100 * time.Millisecond,
 	}
 
 	rc, err := rabbitmq.NewRabbitMQClient(conf)
@@ -28,11 +30,14 @@ func main()  {
 		fmt.Print(err)
 	}
 
-	//err = rc.InitializeQueues()
-	//
-	//if err != nil {
-	//	fmt.Print(err)
-	//}
+	if err := rc.Setup(); err != nil {
+		log.Fatalln(err)
+	}
+
+	if err := rc.Connect(); err != nil {
+		log.Fatalln(err)
+	}
+	defer rc.Shutdown()
 
 	t := Test{Name: "Burak", LastName: "Yilmaz"}
 	newFsConfigBytes, _ := json.Marshal(t)
