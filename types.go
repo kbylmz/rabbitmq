@@ -29,7 +29,7 @@ type Config struct {
 type Client struct {
 	conn              *amqp.Connection
 	config			  Config
-	connectionChannel *amqp.Channel
+	ConnectionChannel *amqp.Channel
 	ChannelNotifyTimeout time.Duration
 }
 

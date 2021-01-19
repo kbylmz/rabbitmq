@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"rabbitmq"
 	"time"
 )
@@ -30,13 +29,7 @@ func main()  {
 		fmt.Print(err)
 	}
 
-	if err := rc.Setup(); err != nil {
-		log.Fatalln(err)
-	}
 
-	if err := rc.Connect(); err != nil {
-		log.Fatalln(err)
-	}
 	defer rc.Shutdown()
 
 	t := Test{Name: "Burak", LastName: "Yilmaz"}
@@ -46,19 +39,19 @@ func main()  {
 	}
 
 	i := 0
-	for true {
+	for i < 10 {
 		fmt.Println(i)
-		if err = rc.Publish(m); err != nil {
+		if err = rc.UnSafePublish(m); err != nil {
 			fmt.Println(" error")
 			fmt.Println(err)
 		}
 
-		time.Sleep(1 * time.Second)
+		//time.Sleep(1 * time.Second)
 		i++
 	}
 
-	//err = rc.Consume()
-	//fmt.Print(err)
+	err = rc.Consume()
+	fmt.Print(err)
 
 	fmt.Print("safa")
 }

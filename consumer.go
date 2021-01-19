@@ -8,7 +8,14 @@ import (
 
 func(c Client) Consume() error {
 
-	messages, err := c.connectionChannel.Consume(
+	chn, err := c.channel()
+	if err != nil {
+		return fmt.Errorf("get channel:%w",err)
+	}
+
+
+
+	messages, err := chn.Consume(
 		c.config.Prefix+"."+c.config.RoutingKey, // name
 		"",      // consumerTag,
 		false,      // noAck
@@ -39,9 +46,25 @@ func handle(messages <-chan amqp.Delivery, c Client) {
 			return
 		}
 
+		fmt.Println("EVENT GELDI")
+
 		msg.Ack(false)
 	}
 }
+
+func (c *Client) consumerChannelListener(chn *amqp.Channel) {
+	err := <-chn.NotifyClose(make(chan *amqp.Error))
+	if err != nil && err.Code == amqp.ConnectionForced {
+		fmt.Println("consumer channel listener: closed")
+
+		if err := c.Consume(); err != nil {
+			fmt.Println("HATA")
+		}
+	}
+
+
+}
+
 
 func(c Client) HandleMessageError(msg amqp.Delivery) {
 	event, err := MessageDeserialize(msg.Body)
@@ -67,7 +90,7 @@ func publishRetryQueue(m *Message, c Client)  {
 	queueName := c.config.Prefix+"."+c.config.RoutingKey
 	retryQueueName := queueName + RetryQueueSuffix
 
-	c.connectionChannel.Publish(
+	c.ConnectionChannel.Publish(
 		c.config.ExchangeName, // exchange
 		retryQueueName,  // routing key
 		false,                              // mandatory
@@ -85,7 +108,7 @@ func publishErrorQueue(m *Message, c Client)  {
 	queueName := c.config.Prefix+"."+c.config.RoutingKey
 	errorQueueName := queueName + ErrorQueueSuffix
 
-	c.connectionChannel.Publish(
+	c.ConnectionChannel.Publish(
 		c.config.ExchangeName, // exchange
 		errorQueueName,  // routing key
 		false,                              // mandatory

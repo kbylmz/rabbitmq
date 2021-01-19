@@ -10,36 +10,39 @@ import (
 
 
 //NewRabbitMQClient ...
-func NewRabbitMQClient(config Config) (*Client, error) {
+func NewRabbitMQClient(config Config) (client *Client, err error) {
 
-	client := &Client{
+	client = &Client{
 		config: config,
 		ChannelNotifyTimeout: config.ChannelNotifyTimeout,
 	}
 
-	return client, nil
+	if err = client.connect(); err != nil {
+		return nil, err
+	}
+
+	if client.ConnectionChannel, err = client.channel(); err != nil {
+		log.Fatalln(err)
+	}
+
+	return
 }
 
 func(c Client) Setup()  error {
-	channel, err := c.Channel()
-	if err != nil {
-		return errors.New("failed to open channel")
-	}
-	defer channel.Close()
 
-	if err = c.declareExchange(channel); err != nil {
+	if err := c.declareExchange(); err != nil {
 		return err
 	}
 
-	if err = c.initializeQueues(channel); err != nil {
+	if err := c.initializeQueues(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func(c Client) declareExchange(ch *amqp.Channel) (err error) {
-	err = ch.ExchangeDeclare(
+func(c Client) declareExchange() (err error) {
+	err = c.ConnectionChannel.ExchangeDeclare(
 		c.config.ExchangeName,         // name
 		c.config.ExchangeType, 		// type
 		true,                   // durable
@@ -57,31 +60,31 @@ func(c Client) declareExchange(ch *amqp.Channel) (err error) {
 	return
 }
 
-func(c Client) initializeQueues(channel *amqp.Channel) error {
+func(c Client) initializeQueues() error {
 
 	queueName := c.config.Prefix+"."+c.config.RoutingKey
 	errorQueueName := queueName + ErrorQueueSuffix
 	retryQueueName := queueName + RetryQueueSuffix
 	retryDestinationRoutingKey := queueName + RetryDestinationSuffix
 
-	c.queueDeclare(queueName, nil, channel)
+	c.queueDeclare(queueName, nil)
 	c.queueDeclare(retryQueueName, map[string]interface{} {
 		"x-message-ttl": RetryTimeoutInMilliseconds,
 		"x-dead-letter-exchange": c.config.ExchangeName,
 		"x-dead-letter-routing-key": retryDestinationRoutingKey,
-	}, channel)
-	c.queueDeclare(errorQueueName, nil, channel)
+	})
+	c.queueDeclare(errorQueueName, nil)
 
-	c.queueBind(queueName, c.config.RoutingKey, channel)
-	c.queueBind(queueName, retryDestinationRoutingKey, channel)
-	c.queueBind(retryQueueName, retryQueueName, channel)
-	c.queueBind(errorQueueName, errorQueueName, channel)
+	c.queueBind(queueName, c.config.RoutingKey)
+	c.queueBind(queueName, retryDestinationRoutingKey)
+	c.queueBind(retryQueueName, retryQueueName)
+	c.queueBind(errorQueueName, errorQueueName)
 
 	return nil
 }
 
-func(c Client) queueDeclare(r string, args map[string]interface{}, channel *amqp.Channel) error  {
-	_, err := channel.QueueDeclare(
+func(c Client) queueDeclare(r string, args map[string]interface{}) error  {
+	_, err := c.ConnectionChannel.QueueDeclare(
 		r, 			// name
 		true,              // durable, the queue will survive a broker restart
 		false,          // delete when used
@@ -98,8 +101,8 @@ func(c Client) queueDeclare(r string, args map[string]interface{}, channel *amqp
 	return nil
 }
 
-func(c Client) queueBind(q, r string, channel *amqp.Channel)  error {
-	err := channel.QueueBind(
+func(c Client) queueBind(q, r string)  error {
+	err := c.ConnectionChannel.QueueBind(
 		q,                           // queue name
 		r,                       // routing key
 		c.config.ExchangeName, // exchange
@@ -126,9 +129,11 @@ WATCH:
 			c.conn, err = amqp.Dial(c.config.ConnectionString)
 
 			if err == nil {
-				fmt.Println("INFO: Reconnected")
-
-				goto WATCH
+				c.ConnectionChannel, err = c.channel()
+				if err == nil {
+					fmt.Println("INFO: Reconnected")
+					goto WATCH
+				}
 			}
 
 			time.Sleep(2 * time.Second)
@@ -140,7 +145,7 @@ WATCH:
 	return nil
 }
 
-func (c *Client) Connect() error{
+func (c *Client) connect() error{
 
 	conn, err := amqp.Dial(c.config.ConnectionString)
 	if err != nil {
@@ -155,9 +160,9 @@ func (c *Client) Connect() error{
 
 }
 
-func (c *Client) Channel() (*amqp.Channel, error) {
+func (c *Client) channel() (*amqp.Channel, error) {
 	if c.conn == nil {
-		if err := c.Connect(); err != nil {
+		if err := c.connect(); err != nil {
 		return nil, errors.New("connection is not open")
 		}
 	}
